@@ -3,12 +3,13 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "clean": "rimraf dist",
+    "clean": "rimraf dist author",
     "lint-scripts": "eslint --ext .jsx,.js ./src/",
     "lint-styles": "stylelint \"./src/**/*.scss\"",
     "karma": "NODE_ENV=test karma start",
     "prebuild": "npm run clean",
     "build": "webpack --mode production",
+    "postbuild": "clientlib --verbose",
     "start": "webpack-dev-server",
     "pretest": "npm run lint-scripts && npm run lint-styles",
     "test": "npm run karma"

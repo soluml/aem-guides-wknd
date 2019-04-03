@@ -4,4 +4,5 @@ node
 
 # Generated Files
 dist
+author
 clientlib.config.js

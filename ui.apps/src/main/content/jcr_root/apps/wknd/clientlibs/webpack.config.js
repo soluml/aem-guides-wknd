@@ -70,7 +70,7 @@ module.exports = (
     ]
   },
   entry: {
-    'clientlib-author/author': ['./src/author']
+    author: ['./src/author']
     // 'clientlib-dialog/dialog': ['./dialog/index'],
     // 'clientlib-site/resources/polyfill/promises': ['es6-promise/auto'],
     // 'clientlib-site/site': ['svgxuse', './site/index'],
@@ -96,15 +96,45 @@ module.exports = (
     //   SPRITE_PATH: JSON.stringify(svgPaths.aemPath),
     // }),
     new MiniCssExtractPlugin({
-      filename: ({chunk: {name}}) => `${name.replace('/js/', '/css/')}.css`,
-      chunkFilename: '[id].[hash].css'
+      filename: ({chunk}) =>
+        `${chunk.name.replace('/js/', '/css/')}.${chunk.hash}.css`,
+      chunkFilename: '[id].css'
     }),
     //new SpriteLoaderPlugin(),
     new AssetsPlugin({
       filename: 'clientlib.config.js',
-      prettyPrint: true,
-      processOutput(assets) {
-        return `window.staticMap = ${JSON.stringify(assets)}`;
+      fileTypes: ['js', 'css'],
+      integrity: true,
+      update: true,
+      processOutput(bundles) {
+        const config = {
+          context: appPath,
+          clientLibRoot: __dirname,
+          libs: Object.entries(bundles).map(([name, files]) => {
+            let longCacheKey = '';
+            const assets = Object.entries(files).reduce(
+              (acc, [category, file]) => {
+                longCacheKey += file.split('.')[1];
+
+                return {...acc, [category]: [file]};
+              },
+              {}
+            );
+
+            return {
+              allowProxy: true,
+              assets,
+              categories: [`clientlib.${name}`],
+              cssProcessor: '[default:none,min:none]',
+              jsProcessor: '[default:none,min:none]',
+              longCacheKey,
+              name,
+              serializationFormat: 'xml'
+            };
+          })
+        };
+
+        return `module.exports = ${JSON.stringify(config, null, 2)}`;
       }
     }),
     showReport && new BundleAnalyzerPlugin(),
