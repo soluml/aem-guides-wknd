@@ -1,0 +1,12 @@
+{
+  "plugins": {
+    "cssnano": {
+      "autoprefixer": false,
+      "discardComments": {"removeAll": true}
+    },
+    "autoprefixer": {
+      "remove": false,
+      "grid": true
+    }
+  }
+}
