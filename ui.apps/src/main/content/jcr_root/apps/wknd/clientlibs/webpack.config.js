@@ -128,7 +128,7 @@ module.exports = (
               cssProcessor: '[default:none,min:none]',
               jsProcessor: '[default:none,min:none]',
               longCacheKey,
-              name,
+              name: `generated-clientlib-${name}`,
               serializationFormat: 'xml'
             };
           })
