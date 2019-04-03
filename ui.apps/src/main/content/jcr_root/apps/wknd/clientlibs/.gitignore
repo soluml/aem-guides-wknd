@@ -3,4 +3,5 @@ node_modules
 node
 
 # Generated Files
+dist
 clientlib.config.js
