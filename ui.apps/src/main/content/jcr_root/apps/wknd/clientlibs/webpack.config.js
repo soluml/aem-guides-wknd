@@ -4,61 +4,21 @@ const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const SpriteLoaderPlugin = require('svg-sprite-loader/plugin');
 const DirectoryNamedWebpackPlugin = require('directory-named-webpack-plugin');
+const AssetsPlugin = require('assets-webpack-plugin');
 const {BundleAnalyzerPlugin} = require('webpack-bundle-analyzer');
 
-// const appPath = 'apps/thrivent/mcs/clientlibs/';
-// const aemPath = 'etc.clientlibs/thrivent/mcs/clientlibs';
-// const outputPath = path.resolve(__dirname, '../ui.apps/src/main/content/jcr_root');
-
-// const bundles = {
-//   // Bundle targeted at the Content Frame within the Editor
-//   // *Currently HMR for this lib is not supported*
-//   author: {
-//     webpackPath: `${appPath}author/author`,
-//     aemPath: `${aemPath}/author`,
-//   },
-//   // Bundle targeted at the Author Frame within the Editor
-//   dialog: {
-//     webpackPath: `${appPath}dialog/dialog`,
-//     aemPath: `${aemPath}/dialog`,
-//   },
-//   // Head Bundle (only JS) used for any setup, available everywhere
-//   // *Currently HMR for this lib is not supported*
-//   head: {
-//     webpackPath: `${appPath}head/head`,
-//     aemPath: `${aemPath}/head`,
-//   },
-//   // Main Bundle, available everywhere
-//   main: {
-//     webpackPath: `${appPath}main/main`,
-//     aemPath: `${aemPath}/main`,
-//   },
-//   // Dependencies for the Main Bundle, available everywhere
-//   vendor: {
-//     webpackPath: `${appPath}vendor/vendor`,
-//     aemPath: `${aemPath}/vendor`,
-//     exclusions: ['highlight.js', 'es6-promise', 'url-search-params-polyfill', 'mdn-polyfills'],
-//   },
-//   // Stuff for the Style Guide, targeted at the Content Frame within the Editor
-//   styleguide: {
-//     webpackPath: `${appPath}styleguide/styleguide`,
-//     aemPath: `${aemPath}/styleguide`,
-//   },
-//   // Polyfill for the Main Bundle, available everywhere
-//   promise: {
-//     webpackPath: `${appPath}main/resources/polyfill/promises`,
-//     aemPath: `${aemPath}/main/resources/polyfill/promises`,
-//   },
-// };
-
-// const svgPaths = {
-//   webpackPath: `${appPath}main/resources/sprite.svg`,
-//   aemPath: `/${aemPath}/main/resources/sprite.svg`,
-// };
+const appPath = __dirname;
+const aemPath = '/etc.clientlibs/wknd/clientlibs';
 
 module.exports = (
   env,
-  {mode, report, isTest, port = 8080, aemPort = 4502}
+  {
+    mode = 'development',
+    port = 8080,
+    aemPort = 4502,
+    showReport = false,
+    isTest = false
+  }
 ) => ({
   mode,
   target: 'web',
@@ -71,11 +31,7 @@ module.exports = (
           path.resolve(__dirname, 'src'),
           path.resolve(__dirname, 'test')
         ],
-        loader: 'babel-loader',
-        options: {
-          babelrc: true,
-          configFile: './.babelrc.js'
-        }
+        loader: 'babel-loader'
       },
       ...[
         {
@@ -92,7 +48,7 @@ module.exports = (
         },
         {
           test: /\.less$/,
-          use: [{loader: 'less-loader'}]
+          use: ['less-loader']
         }
       ].map(({test, use}) => ({
         test,
@@ -106,53 +62,26 @@ module.exports = (
                   attrs: {'data-hmr': 'webpack'}
                 }
               },
-          {
-            loader: 'css-loader'
-          },
-          {
-            loader: 'postcss-loader'
-          },
+          'css-loader',
+          'postcss-loader',
           ...use
         ]
       }))
-      // {
-      //   test: /\.svg$/,
-      //   include: [path.resolve(__dirname, 'src/assets')],
-      //   use: [
-      //     {
-      //       loader: 'svg-sprite-loader',
-      //       options: {
-      //         symbolId: '[name]',
-      //         extract: true,
-      //         spriteFilename: svgPaths.webpackPath
-      //       }
-      //     },
-      //     {
-      //       loader: 'svgo-loader',
-      //       options: {
-      //         plugins: [{convertPathData: false}]
-      //       }
-      //     }
-      //   ]
-      // }
     ]
   },
   entry: {
-    'clientlib-site/resources/polyfill/promises': ['es6-promise/auto']
-    // [bundles.head.webpackPath]: ['./src/base/head.js'],
-    // [bundles.main.webpackPath]: ['svgxuse', './src/base/main.js'],
-    // [bundles.styleguide.webpackPath]: ['./src/base/styleguide.js'],
-    // [bundles.author.webpackPath]: ['./src/base/author.js'],
-    // [bundles.dialog.webpackPath]: ['./src/base/dialog.js'],
+    'clientlib-author/author': ['./src/author']
+    // 'clientlib-dialog/dialog': ['./dialog/index'],
+    // 'clientlib-site/resources/polyfill/promises': ['es6-promise/auto'],
+    // 'clientlib-site/site': ['svgxuse', './site/index'],
+    // 'clientlib-siteHead/siteHead': ['./siteHead/index']
   },
   output: {
-    filename: '[name].js',
-    path: outputPath
+    filename: '[name].[hash].js',
+    path: appPath
   },
   resolve: {
     alias: {
-      Main: path.resolve(__dirname, 'src/main'),
-      Utils: path.resolve(__dirname, 'src/utils'),
       Src: path.resolve(__dirname, 'src'),
       Svg: path.resolve(__dirname, 'src/assets/svg')
     },
@@ -160,20 +89,25 @@ module.exports = (
     plugins: [new DirectoryNamedWebpackPlugin(true)]
   },
   plugins: [
-    new webpack.DefinePlugin({
-      PROMISE_POLYFILL_PATH: JSON.stringify(
-        `${isTest ? `/absolute${outputPath}` : ''}/${
-          bundles.promise.webpackPath
-        }.js`
-      ),
-      SPRITE_PATH: JSON.stringify(svgPaths.aemPath)
-    }),
+    // new webpack.DefinePlugin({
+    //   PROMISE_POLYFILL_PATH: JSON.stringify(
+    //     `${test ? `/absolute${outputPath}` : ''}/${bundles.promise.webpackPath}.js`
+    //   ),
+    //   SPRITE_PATH: JSON.stringify(svgPaths.aemPath),
+    // }),
     new MiniCssExtractPlugin({
       filename: ({chunk: {name}}) => `${name.replace('/js/', '/css/')}.css`,
-      chunkFilename: '[id].css'
+      chunkFilename: '[id].[hash].css'
     }),
-    new SpriteLoaderPlugin(),
-    report && new BundleAnalyzerPlugin(),
+    //new SpriteLoaderPlugin(),
+    new AssetsPlugin({
+      filename: 'clientlib.config.js',
+      prettyPrint: true,
+      processOutput(assets) {
+        return `window.staticMap = ${JSON.stringify(assets)}`;
+      }
+    }),
+    showReport && new BundleAnalyzerPlugin(),
     mode !== 'production' && new webpack.HotModuleReplacementPlugin()
   ].filter(p => p),
   optimization: {
@@ -192,33 +126,7 @@ module.exports = (
           ie8: false
         }
       })
-    ],
-    splitChunks: {
-      cacheGroups: {
-        vendors: {
-          test({context}) {
-            if (/[\\/]node_modules[\\/]/.test(context)) {
-              if (
-                bundles.vendor.exclusions
-                  .map(ex => new RegExp(`/${ex}/?`, 'i'))
-                  .some(re => re.test(context))
-              ) {
-                return false;
-              }
-
-              return true;
-            }
-          },
-          reuseExistingChunk: true,
-          enforce: true,
-          name: bundles.vendor.webpackPath
-        }
-      },
-      chunks: 'all',
-      minSize: 0,
-      maxSize: 0,
-      minChunks: 1
-    }
+    ]
   },
   devServer: {
     hot: true,
