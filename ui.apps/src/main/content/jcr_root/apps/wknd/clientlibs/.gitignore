@@ -4,5 +4,5 @@ node
 
 # Generated Files
 dist
-generated-clientlib-*
+webpack-clientlib-*
 clientlib.config.js

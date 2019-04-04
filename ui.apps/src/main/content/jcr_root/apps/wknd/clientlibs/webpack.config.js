@@ -83,6 +83,7 @@ module.exports = (
   resolve: {
     alias: {
       Src: path.resolve(__dirname, 'src'),
+      Components: path.resolve(__dirname, '../components'),
       Svg: path.resolve(__dirname, 'src/assets/svg')
     },
     extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
@@ -128,7 +129,7 @@ module.exports = (
               cssProcessor: '[default:none,min:none]',
               jsProcessor: '[default:none,min:none]',
               longCacheKey,
-              name: `generated-clientlib-${name}`,
+              name: `webpack-clientlib-${name}`,
               serializationFormat: 'xml'
             };
           })
