@@ -8,14 +8,6 @@ req.keys().forEach(req);
 if (process.env.NODE_ENV === 'development') {
   if (module.hot) {
     module.hot.accept(req.id, () => {
-      //Clean jQuery event delegations in content frame
-      try {
-        $(document).off();
-        $(window).off();
-      } catch {
-        //
-      }
-
       req = require.context('Components', true, /\.author\.js$/);
       req.keys().forEach(req);
     });

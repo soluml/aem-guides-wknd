@@ -70,10 +70,10 @@ module.exports = (
     ]
   },
   entry: {
-    author: ['./src/author']
+    author: ['./src/author'],
     // 'clientlib-dialog/dialog': ['./dialog/index'],
     // 'clientlib-site/resources/polyfill/promises': ['es6-promise/auto'],
-    // 'clientlib-site/site': ['svgxuse', './site/index'],
+    site: ['svgxuse', './src/site']
     // 'clientlib-siteHead/siteHead': ['./siteHead/index']
   },
   output: {
