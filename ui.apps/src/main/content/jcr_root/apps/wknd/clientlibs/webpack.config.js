@@ -72,12 +72,16 @@ module.exports = (
   entry: {
     author: ['./src/author'],
     // 'clientlib-dialog/dialog': ['./dialog/index'],
-    // 'clientlib-site/resources/polyfill/promises': ['es6-promise/auto'],
+    'site/resources/polyfill-promises': ['es6-promise/auto'],
     site: ['svgxuse', './src/site']
     // 'clientlib-siteHead/siteHead': ['./siteHead/index']
   },
   output: {
-    filename: '[name].[hash].js',
+    filename(chunkData) {
+      return `[name]${
+        chunkData.chunk.name.includes('/resources/') ? '' : '.[hash]'
+      }.js`;
+    },
     path: appPath
   },
   resolve: {
@@ -90,12 +94,14 @@ module.exports = (
     plugins: [new DirectoryNamedWebpackPlugin(true)]
   },
   plugins: [
-    // new webpack.DefinePlugin({
-    //   PROMISE_POLYFILL_PATH: JSON.stringify(
-    //     `${test ? `/absolute${outputPath}` : ''}/${bundles.promise.webpackPath}.js`
-    //   ),
-    //   SPRITE_PATH: JSON.stringify(svgPaths.aemPath),
-    // }),
+    new webpack.DefinePlugin({
+      PROMISE_POLYFILL_PATH: JSON.stringify(
+        `${
+          isTest ? `/absolute${appPath}` : aemPath
+        }/site/resources/polyfill-promises.js`
+      ),
+      SPRITE_PATH: JSON.stringify(`${aemPath}/main/resources/sprite.svg`)
+    }),
     new MiniCssExtractPlugin({
       filename: ({chunk}) =>
         `${chunk.name.replace('/js/', '/css/')}.${chunk.hash}.css`,
@@ -111,28 +117,45 @@ module.exports = (
         const config = {
           context: appPath,
           clientLibRoot: __dirname,
-          libs: Object.entries(bundles).map(([name, files]) => {
-            let longCacheKey = '';
-            const assets = Object.entries(files).reduce(
-              (acc, [category, file]) => {
-                longCacheKey += file.split('.')[1];
+          libs: Object.entries(bundles)
+            .sort(([a], [b]) => (a < b ? -1 : 1))
+            .reduce((acc, cur) => {
+              const name = cur[0];
 
-                return {...acc, [category]: [file]};
-              },
-              {}
-            );
+              // Add to the resources of another clientlib
+              if (name.includes('/resources/')) {
+                const clientlibName = name.split('/resources/').shift();
+                const clientlib = acc.find(c => c[0] === clientlibName);
 
-            return {
-              allowProxy: true,
-              assets,
-              categories: [`clientlib.${name}`],
-              cssProcessor: '[default:none,min:none]',
-              jsProcessor: '[default:none,min:none]',
-              longCacheKey,
-              name: `webpack-clientlib-${name}`,
-              serializationFormat: 'xml'
-            };
-          })
+                clientlib[1].resources = `${clientlibName}/resources/**/*`;
+
+                return acc;
+              }
+
+              return [...acc, cur];
+            }, [])
+            .map(([name, files]) => {
+              let longCacheKey = '';
+              const assets = Object.entries(files).reduce(
+                (acc, [category, file]) => {
+                  longCacheKey += file.split('.')[1] || '';
+
+                  return {...acc, [category]: [file]};
+                },
+                {}
+              );
+
+              return {
+                allowProxy: true,
+                assets,
+                categories: [`clientlib.${name}`],
+                cssProcessor: '[default:none,min:none]',
+                jsProcessor: '[default:none,min:none]',
+                longCacheKey,
+                name: `webpack-clientlib-${name}`,
+                serializationFormat: 'xml'
+              };
+            })
         };
 
         return `module.exports = ${JSON.stringify(config, null, 2)}`;
