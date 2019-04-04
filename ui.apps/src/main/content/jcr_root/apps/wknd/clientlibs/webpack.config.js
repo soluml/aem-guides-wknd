@@ -82,12 +82,14 @@ module.exports = (
         chunkData.chunk.name.includes('/resources/') ? '' : '.[hash]'
       }.js`;
     },
+    chunkFilename: '[name].[chunkhash].js',
     path: appPath
   },
   resolve: {
     alias: {
       Src: path.resolve(__dirname, 'src'),
       Components: path.resolve(__dirname, '../components'),
+      Utils: path.resolve(__dirname, 'src/_utils'),
       Svg: path.resolve(__dirname, 'src/assets/svg')
     },
     extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
