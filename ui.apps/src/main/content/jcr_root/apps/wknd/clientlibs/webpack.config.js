@@ -68,6 +68,26 @@ module.exports = (
           ...use,
         ],
       })),
+      {
+        test: /\.svg$/,
+        include: [path.resolve(__dirname, 'src/_assets')],
+        use: [
+          {
+            loader: 'svg-sprite-loader',
+            options: {
+              symbolId: '[name]',
+              extract: true,
+              spriteFilename: `${appPath}/site/resources/sprite.svg`,
+            },
+          },
+          {
+            loader: 'svgo-loader',
+            options: {
+              plugins: [{convertPathData: false}],
+            },
+          },
+        ],
+      },
     ],
   },
   entry: {
@@ -108,7 +128,7 @@ module.exports = (
         `${chunk.name.replace('/js/', '/css/')}.${chunk.hash}.css`,
       chunkFilename: '[id].css',
     }),
-    // new SpriteLoaderPlugin(),
+    new SpriteLoaderPlugin(),
     new AssetsPlugin({
       filename: 'clientlib.config.js',
       fileTypes: ['js', 'css'],
