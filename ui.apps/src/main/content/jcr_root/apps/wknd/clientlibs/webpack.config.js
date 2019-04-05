@@ -9,6 +9,7 @@ const {BundleAnalyzerPlugin} = require('webpack-bundle-analyzer');
 
 const appPath = path.resolve(__dirname, 'dist');
 const aemPath = '/etc.clientlibs/wknd/clientlibs';
+const promisePolyfillPath = 'site/resources/polyfill-promises';
 
 module.exports = (
   env,
@@ -70,9 +71,9 @@ module.exports = (
     ],
   },
   entry: {
+    [promisePolyfillPath]: ['es6-promise/auto'],
     author: ['./src/author'],
     dialog: ['./src/dialog'],
-    'site/resources/polyfill-promises': ['es6-promise/auto'],
     site: ['svgxuse', './src/site'],
     siteHead: ['./src/siteHead'],
   },
@@ -98,9 +99,7 @@ module.exports = (
   plugins: [
     new webpack.DefinePlugin({
       PROMISE_POLYFILL_PATH: JSON.stringify(
-        `${
-          isTest ? `/absolute${appPath}` : aemPath
-        }/site/resources/polyfill-promises.js`
+        `${isTest ? `/absolute${appPath}` : aemPath}/${promisePolyfillPath}.js`
       ),
       SPRITE_PATH: JSON.stringify(`${aemPath}/main/resources/sprite.svg`),
     }),
@@ -184,26 +183,17 @@ module.exports = (
       }),
     ],
     splitChunks: {
+      // Don't split anything that's a resource to a clientlib
+      chunks: chunk => !/^.+\/resources\//i.test(chunk.name),
+      automaticNameDelimiter: '~',
       name: true,
-      chunks: 'initial',
-      minSize: 30000,
-      maxSize: 0,
       minChunks: 1,
+      minSize: 0,
+      maxSize: 0,
+      maxInitialRequests: 20,
       cacheGroups: {
         vendors: {
-          test({context}) {
-            if (/[\\/]node_modules[\\/]/.test(context)) {
-              if (
-                ['es6-promise', 'url-search-params-polyfill']
-                  .map(ex => new RegExp(`/${ex}/?`, 'i'))
-                  .some(re => re.test(context))
-              ) {
-                return false;
-              }
-
-              return true;
-            }
-          },
+          test: /[\\/]node_modules[\\/]/,
           reuseExistingChunk: true,
           enforce: true,
         },
