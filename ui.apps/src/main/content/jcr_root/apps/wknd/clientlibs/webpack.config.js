@@ -109,59 +109,84 @@ module.exports = (
       chunkFilename: '[id].css',
     }),
     // new SpriteLoaderPlugin(),
-    // new AssetsPlugin({
-    //   filename: 'clientlib.config.js',
-    //   fileTypes: ['js', 'css'],
-    //   integrity: true,
-    //   update: true,
-    //   processOutput(bundles) {
-    //     const config = {
-    //       context: appPath,
-    //       clientLibRoot: __dirname,
-    //       libs: Object.entries(bundles)
-    //         .sort(([a], [b]) => (a < b ? -1 : 1))
-    //         .reduce((acc, cur) => {
-    //           const name = cur[0];
+    new AssetsPlugin({
+      filename: 'clientlib.config.js',
+      fileTypes: ['js', 'css'],
+      integrity: true,
+      update: true,
+      processOutput(bundles) {
+        const clientlibPrefix = 'clientlib.';
+        const config = {
+          context: appPath,
+          clientLibRoot: __dirname,
+          libs: Object.entries(bundles)
+            .sort(([a]) =>
+              (a.includes('~') || a.includes('/resources/') ? 1 : -1)
+            )
+            .reduce((acc, cur) => {
+              const name = cur[0];
 
-    //           // Add to the resources of another clientlib
-    //           if (name.includes('/resources/')) {
-    //             const clientlibName = name.split('/resources/').shift();
-    //             const clientlib = acc.find(c => c[0] === clientlibName);
+              if (name.includes('/resources/')) {
+                // Add to the resources of another clientlib
+                const clientlibName = name.split('/resources/').shift();
+                const clientlib = acc.find(c => c[0] === clientlibName);
 
-    //             clientlib[1].resources = `${clientlibName}/resources/**/*`;
+                clientlib[1].resources = `${clientlibName}/resources/**/*`;
 
-    //             return acc;
-    //           }
+                return acc;
+              }
 
-    //           return [...acc, cur];
-    //         }, [])
-    //         .map(([name, files]) => {
-    //           let longCacheKey = '';
-    //           const assets = Object.entries(files).reduce(
-    //             (acc, [category, file]) => {
-    //               longCacheKey += file.split('.')[1] || '';
+              return [...acc, cur];
+            }, [])
+            .map(([name, files]) => {
+              let longCacheKey = '';
+              let dependencies;
+              const assets = Object.entries(files).reduce(
+                (acc, [category, file]) => {
+                  if (typeof file === 'string') {
+                    longCacheKey += file.split('.')[1] || '';
 
-    //               return {...acc, [category]: [file]};
-    //             },
-    //             {}
-    //           );
+                    return {...acc, [category]: [file]};
+                  }
 
-    //           return {
-    //             allowProxy: true,
-    //             assets,
-    //             categories: [`clientlib.${name}`],
-    //             cssProcessor: '[default:none,min:none]',
-    //             jsProcessor: '[default:none,min:none]',
-    //             longCacheKey,
-    //             name: `webpack-clientlib-${name}`,
-    //             serializationFormat: 'xml'
-    //           };
-    //         })
-    //     };
+                  return acc;
+                },
+                {}
+              );
 
-    //     return `module.exports = ${JSON.stringify(config, null, 2)}`;
-    //   }
-    // }),
+              // Determine Dependencies
+              if (!name.includes('~')) {
+                dependencies = Object.entries(bundles)
+                  .reverse()
+                  .reduce((acc, [libName]) => {
+                    if (
+                      libName.includes('~') &&
+                      libName.split('~').includes(name)
+                    ) {
+                      acc.push(clientlibPrefix + libName);
+                    }
+
+                    return acc;
+                  }, []);
+              }
+
+              return {
+                allowProxy: true,
+                assets,
+                categories: [clientlibPrefix + name],
+                dependencies,
+                cssProcessor: '[default:none,min:none]',
+                jsProcessor: '[default:none,min:none]',
+                longCacheKey,
+                name: `webpack-clientlib-${name}`,
+                serializationFormat: 'xml',
+              };
+            }),
+        };
+
+        return `module.exports = ${JSON.stringify(config, null, 2)}`;
+      },
+    }),
     showReport && new BundleAnalyzerPlugin(),
     mode !== 'production' && new webpack.HotModuleReplacementPlugin(),
   ].filter(p => p),
@@ -200,65 +225,65 @@ module.exports = (
       },
     },
   },
-  devServer: {
-    hot: true,
-    open: true,
-    openPage: 'content/thrivent/mcs/en/index.html',
-    port,
-    publicPath: '/static/',
-    proxy: [
-      {
-        context: ['**', '!/static/**'],
-        target: `http://localhost:${aemPort}`,
-        bypass(req, res) {
-          const baseName = path.basename(req.url);
+  // devServer: {
+  //   hot: true,
+  //   open: true,
+  //   openPage: 'content/thrivent/mcs/en/index.html',
+  //   port,
+  //   publicPath: '/static/',
+  //   proxy: [
+  //     {
+  //       context: ['**', '!/static/**'],
+  //       target: `http://localhost:${aemPort}`,
+  //       bypass(req, res) {
+  //         const baseName = path.basename(req.url);
 
-          // hot-update.json file is in the `/static/` root
-          if (baseName.includes('hot-update.json')) {
-            // i.e. /static/38aef42fe50485ef5f9c.hot-update.json
-            return `/static/${baseName}`;
-          }
+  //         // hot-update.json file is in the `/static/` root
+  //         if (baseName.includes('hot-update.json')) {
+  //           // i.e. /static/38aef42fe50485ef5f9c.hot-update.json
+  //           return `/static/${baseName}`;
+  //         }
 
-          // Proxy HMR requests back to Webpack
-          if (baseName.includes('hot-update')) {
-            // The other hot update files (ex. BUNDLE.hot-update.js) are in the `/static/${appPath}` folder
-            const fileName = path
-              .basename(req.url)
-              .split('.')
-              .shift();
+  //         // Proxy HMR requests back to Webpack
+  //         if (baseName.includes('hot-update')) {
+  //           // The other hot update files (ex. BUNDLE.hot-update.js) are in the `/static/${appPath}` folder
+  //           const fileName = path
+  //             .basename(req.url)
+  //             .split('.')
+  //             .shift();
 
-            // i.e. /static/apps/thrivent/mcs/clientlibs/main/main.fd3f23c87cc7b89841ee.hot-update.js
-            return `/static/${appPath}${fileName}/${baseName}`;
-          }
+  //           // i.e. /static/apps/thrivent/mcs/clientlibs/main/main.fd3f23c87cc7b89841ee.hot-update.js
+  //           return `/static/${appPath}${fileName}/${baseName}`;
+  //         }
 
-          // Proxy AEM clientlibs back to Webpack
-          if (req.url.includes(aemPath)) {
-            if (req.url.endsWith('.css')) {
-              // Hide CSS, HMR uses in DOM <style> tags
-              res.send('');
-            } else {
-              if (baseName.startsWith('head')) {
-                return false;
-              }
+  //         // Proxy AEM clientlibs back to Webpack
+  //         if (req.url.includes(aemPath)) {
+  //           if (req.url.endsWith('.css')) {
+  //             // Hide CSS, HMR uses in DOM <style> tags
+  //             res.send('');
+  //           } else {
+  //             if (baseName.startsWith('head')) {
+  //               return false;
+  //             }
 
-              const filePath = req.url
-                .split(aemPath)
-                .pop()
-                .substr(1);
-              let finalPath = filePath;
+  //             const filePath = req.url
+  //               .split(aemPath)
+  //               .pop()
+  //               .substr(1);
+  //             let finalPath = filePath;
 
-              // AEM clientlibs may be versioned, strip that out for Webpack
-              if (filePath.split('.').length > 2) {
-                const fileName = filePath.split('.').shift();
+  //             // AEM clientlibs may be versioned, strip that out for Webpack
+  //             if (filePath.split('.').length > 2) {
+  //               const fileName = filePath.split('.').shift();
 
-                finalPath = `${fileName}/${fileName}${path.extname(filePath)}`;
-              }
+  //               finalPath = `${fileName}/${fileName}${path.extname(filePath)}`;
+  //             }
 
-              return `/static/${appPath}${finalPath}`;
-            }
-          }
-        },
-      },
-    ],
-  },
+  //             return `/static/${appPath}${finalPath}`;
+  //           }
+  //         }
+  //       },
+  //     },
+  //   ],
+  // },
 });
