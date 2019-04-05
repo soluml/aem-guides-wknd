@@ -245,65 +245,65 @@ module.exports = (
       },
     },
   },
-  // devServer: {
-  //   hot: true,
-  //   open: true,
-  //   openPage: 'content/thrivent/mcs/en/index.html',
-  //   port,
-  //   publicPath: '/static/',
-  //   proxy: [
-  //     {
-  //       context: ['**', '!/static/**'],
-  //       target: `http://localhost:${aemPort}`,
-  //       bypass(req, res) {
-  //         const baseName = path.basename(req.url);
+  devServer: {
+    hot: true,
+    open: true,
+    openPage: 'content/thrivent/mcs/en/index.html',
+    port,
+    publicPath: '/static/',
+    proxy: [
+      {
+        context: ['**', '!/static/**'],
+        target: `http://localhost:${aemPort}`,
+        bypass(req, res) {
+          const baseName = path.basename(req.url);
 
-  //         // hot-update.json file is in the `/static/` root
-  //         if (baseName.includes('hot-update.json')) {
-  //           // i.e. /static/38aef42fe50485ef5f9c.hot-update.json
-  //           return `/static/${baseName}`;
-  //         }
+          // hot-update.json file is in the `/static/` root
+          if (baseName.includes('hot-update.json')) {
+            // i.e. /static/38aef42fe50485ef5f9c.hot-update.json
+            return `/static/${baseName}`;
+          }
 
-  //         // Proxy HMR requests back to Webpack
-  //         if (baseName.includes('hot-update')) {
-  //           // The other hot update files (ex. BUNDLE.hot-update.js) are in the `/static/${appPath}` folder
-  //           const fileName = path
-  //             .basename(req.url)
-  //             .split('.')
-  //             .shift();
+          // Proxy HMR requests back to Webpack
+          if (baseName.includes('hot-update')) {
+            // The other hot update files (ex. BUNDLE.hot-update.js) are in the `/static/${appPath}` folder
+            const fileName = path
+              .basename(req.url)
+              .split('.')
+              .shift();
 
-  //           // i.e. /static/apps/thrivent/mcs/clientlibs/main/main.fd3f23c87cc7b89841ee.hot-update.js
-  //           return `/static/${appPath}${fileName}/${baseName}`;
-  //         }
+            // i.e. /static/apps/APP/clientlibs/site/site.fd3f23c87cc7b89841ee.hot-update.js
+            return `/static/${appPath}/${fileName}/${baseName}`;
+          }
 
-  //         // Proxy AEM clientlibs back to Webpack
-  //         if (req.url.includes(aemPath)) {
-  //           if (req.url.endsWith('.css')) {
-  //             // Hide CSS, HMR uses in DOM <style> tags
-  //             res.send('');
-  //           } else {
-  //             if (baseName.startsWith('head')) {
-  //               return false;
-  //             }
+          // Proxy AEM clientlibs back to Webpack
+          if (req.url.includes(aemPath)) {
+            if (req.url.endsWith('.css')) {
+              // Hide CSS, HMR uses in DOM <style> tags
+              res.send('');
+            } else {
+              if (baseName.startsWith('head')) {
+                return false;
+              }
 
-  //             const filePath = req.url
-  //               .split(aemPath)
-  //               .pop()
-  //               .substr(1);
-  //             let finalPath = filePath;
+              const filePath = req.url
+                .split(aemPath)
+                .pop()
+                .substr(1);
+              let finalPath = filePath;
 
-  //             // AEM clientlibs may be versioned, strip that out for Webpack
-  //             if (filePath.split('.').length > 2) {
-  //               const fileName = filePath.split('.').shift();
+              // AEM clientlibs may be versioned, strip that out for Webpack
+              if (filePath.split('.').length > 2) {
+                const fileName = filePath.split('.').shift();
 
-  //               finalPath = `${fileName}/${fileName}${path.extname(filePath)}`;
-  //             }
+                finalPath = `${fileName}/${fileName}${path.extname(filePath)}`;
+              }
 
-  //             return `/static/${appPath}${finalPath}`;
-  //           }
-  //         }
-  //       },
-  //     },
-  //   ],
-  // },
+              return `/static/${appPath}/${finalPath}`;
+            }
+          }
+        },
+      },
+    ],
+  },
 });
