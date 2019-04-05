@@ -17,7 +17,7 @@ module.exports = (
     port = 8080,
     aemPort = 4502,
     showReport = false,
-    isTest = false
+    isTest = false,
   }
 ) => ({
   mode,
@@ -29,9 +29,9 @@ module.exports = (
         test: /\.(j|t)sx?$/,
         include: [
           path.resolve(__dirname, 'src'),
-          path.resolve(__dirname, 'test')
+          path.resolve(__dirname, 'test'),
         ],
-        loader: 'babel-loader'
+        loader: 'babel-loader',
       },
       ...[
         {
@@ -41,15 +41,15 @@ module.exports = (
               loader: 'sass-loader',
               options: {
                 implementation: require('sass'), //eslint-disable-line global-require
-                importer: require('node-sass-glob-importer')() //eslint-disable-line global-require
-              }
-            }
-          ]
+                importer: require('node-sass-glob-importer')(), //eslint-disable-line global-require
+              },
+            },
+          ],
         },
         {
           test: /\.less$/,
-          use: ['less-loader']
-        }
+          use: ['less-loader'],
+        },
       ].map(({test, use}) => ({
         test,
         use: [
@@ -59,21 +59,21 @@ module.exports = (
                 loader: 'style-loader',
                 options: {
                   hmr: true,
-                  attrs: {'data-hmr': 'webpack'}
-                }
+                  attrs: {'data-hmr': 'webpack'},
+                },
               },
           'css-loader',
           'postcss-loader',
-          ...use
-        ]
-      }))
-    ]
+          ...use,
+        ],
+      })),
+    ],
   },
   entry: {
     author: ['./src/author'],
-    // 'clientlib-dialog/dialog': ['./dialog/index'],
+    dialog: ['./src/dialog'],
     'site/resources/polyfill-promises': ['es6-promise/auto'],
-    site: ['svgxuse', './src/site']
+    site: ['svgxuse', './src/site'],
     // 'clientlib-siteHead/siteHead': ['./siteHead/index']
   },
   output: {
@@ -83,17 +83,17 @@ module.exports = (
       }.js`;
     },
     chunkFilename: '[name].[chunkhash].js',
-    path: appPath
+    path: appPath,
   },
   resolve: {
     alias: {
       Src: path.resolve(__dirname, 'src'),
       Components: path.resolve(__dirname, '../components'),
       Utils: path.resolve(__dirname, 'src/_utils'),
-      Svg: path.resolve(__dirname, 'src/assets/svg')
+      Svg: path.resolve(__dirname, 'src/assets/svg'),
     },
     extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
-    plugins: [new DirectoryNamedWebpackPlugin(true)]
+    plugins: [new DirectoryNamedWebpackPlugin(true)],
   },
   plugins: [
     new webpack.DefinePlugin({
@@ -102,69 +102,69 @@ module.exports = (
           isTest ? `/absolute${appPath}` : aemPath
         }/site/resources/polyfill-promises.js`
       ),
-      SPRITE_PATH: JSON.stringify(`${aemPath}/main/resources/sprite.svg`)
+      SPRITE_PATH: JSON.stringify(`${aemPath}/main/resources/sprite.svg`),
     }),
     new MiniCssExtractPlugin({
       filename: ({chunk}) =>
         `${chunk.name.replace('/js/', '/css/')}.${chunk.hash}.css`,
-      chunkFilename: '[id].css'
+      chunkFilename: '[id].css',
     }),
-    //new SpriteLoaderPlugin(),
-    new AssetsPlugin({
-      filename: 'clientlib.config.js',
-      fileTypes: ['js', 'css'],
-      integrity: true,
-      update: true,
-      processOutput(bundles) {
-        const config = {
-          context: appPath,
-          clientLibRoot: __dirname,
-          libs: Object.entries(bundles)
-            .sort(([a], [b]) => (a < b ? -1 : 1))
-            .reduce((acc, cur) => {
-              const name = cur[0];
+    // new SpriteLoaderPlugin(),
+    // new AssetsPlugin({
+    //   filename: 'clientlib.config.js',
+    //   fileTypes: ['js', 'css'],
+    //   integrity: true,
+    //   update: true,
+    //   processOutput(bundles) {
+    //     const config = {
+    //       context: appPath,
+    //       clientLibRoot: __dirname,
+    //       libs: Object.entries(bundles)
+    //         .sort(([a], [b]) => (a < b ? -1 : 1))
+    //         .reduce((acc, cur) => {
+    //           const name = cur[0];
 
-              // Add to the resources of another clientlib
-              if (name.includes('/resources/')) {
-                const clientlibName = name.split('/resources/').shift();
-                const clientlib = acc.find(c => c[0] === clientlibName);
+    //           // Add to the resources of another clientlib
+    //           if (name.includes('/resources/')) {
+    //             const clientlibName = name.split('/resources/').shift();
+    //             const clientlib = acc.find(c => c[0] === clientlibName);
 
-                clientlib[1].resources = `${clientlibName}/resources/**/*`;
+    //             clientlib[1].resources = `${clientlibName}/resources/**/*`;
 
-                return acc;
-              }
+    //             return acc;
+    //           }
 
-              return [...acc, cur];
-            }, [])
-            .map(([name, files]) => {
-              let longCacheKey = '';
-              const assets = Object.entries(files).reduce(
-                (acc, [category, file]) => {
-                  longCacheKey += file.split('.')[1] || '';
+    //           return [...acc, cur];
+    //         }, [])
+    //         .map(([name, files]) => {
+    //           let longCacheKey = '';
+    //           const assets = Object.entries(files).reduce(
+    //             (acc, [category, file]) => {
+    //               longCacheKey += file.split('.')[1] || '';
 
-                  return {...acc, [category]: [file]};
-                },
-                {}
-              );
+    //               return {...acc, [category]: [file]};
+    //             },
+    //             {}
+    //           );
 
-              return {
-                allowProxy: true,
-                assets,
-                categories: [`clientlib.${name}`],
-                cssProcessor: '[default:none,min:none]',
-                jsProcessor: '[default:none,min:none]',
-                longCacheKey,
-                name: `webpack-clientlib-${name}`,
-                serializationFormat: 'xml'
-              };
-            })
-        };
+    //           return {
+    //             allowProxy: true,
+    //             assets,
+    //             categories: [`clientlib.${name}`],
+    //             cssProcessor: '[default:none,min:none]',
+    //             jsProcessor: '[default:none,min:none]',
+    //             longCacheKey,
+    //             name: `webpack-clientlib-${name}`,
+    //             serializationFormat: 'xml'
+    //           };
+    //         })
+    //     };
 
-        return `module.exports = ${JSON.stringify(config, null, 2)}`;
-      }
-    }),
+    //     return `module.exports = ${JSON.stringify(config, null, 2)}`;
+    //   }
+    // }),
     showReport && new BundleAnalyzerPlugin(),
-    mode !== 'production' && new webpack.HotModuleReplacementPlugin()
+    mode !== 'production' && new webpack.HotModuleReplacementPlugin(),
   ].filter(p => p),
   optimization: {
     minimize: mode === 'production',
@@ -173,16 +173,42 @@ module.exports = (
         uglifyOptions: {
           compress: {
             drop_console: true,
-            drop_debugger: true
+            drop_debugger: true,
           },
           output: {
-            comments: false
+            comments: false,
           },
           mangle: true,
-          ie8: false
-        }
-      })
-    ]
+          ie8: false,
+        },
+      }),
+    ],
+    splitChunks: {
+      name: true,
+      chunks: 'initial',
+      minSize: 30000,
+      maxSize: 0,
+      minChunks: 1,
+      cacheGroups: {
+        vendors: {
+          test({context}) {
+            if (/[\\/]node_modules[\\/]/.test(context)) {
+              if (
+                ['es6-promise', 'url-search-params-polyfill']
+                  .map(ex => new RegExp(`/${ex}/?`, 'i'))
+                  .some(re => re.test(context))
+              ) {
+                return false;
+              }
+
+              return true;
+            }
+          },
+          reuseExistingChunk: true,
+          enforce: true,
+        },
+      },
+    },
   },
   devServer: {
     hot: true,
@@ -241,8 +267,8 @@ module.exports = (
               return `/static/${appPath}${finalPath}`;
             }
           }
-        }
-      }
-    ]
-  }
+        },
+      },
+    ],
+  },
 });
