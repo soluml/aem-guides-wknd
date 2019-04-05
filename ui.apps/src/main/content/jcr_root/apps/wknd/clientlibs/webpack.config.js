@@ -74,7 +74,7 @@ module.exports = (
     dialog: ['./src/dialog'],
     'site/resources/polyfill-promises': ['es6-promise/auto'],
     site: ['svgxuse', './src/site'],
-    // 'clientlib-siteHead/siteHead': ['./siteHead/index']
+    siteHead: ['./src/siteHead'],
   },
   output: {
     filename(chunkData) {
