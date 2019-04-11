@@ -9,7 +9,9 @@ const {BundleAnalyzerPlugin} = require('webpack-bundle-analyzer');
 
 const appPath = path.resolve(__dirname, 'dist');
 const aemPath = '/etc.clientlibs/wknd/clientlibs';
+const dynamicClientlibPrefix = 'webpack-clientlib-';
 const promisePolyfillPath = 'site/resources/polyfill-promises';
+const automaticNameDelimiter = '~';
 
 module.exports = (
   env,
@@ -111,7 +113,7 @@ module.exports = (
       Src: path.resolve(__dirname, 'src'),
       Components: path.resolve(__dirname, '../components'),
       Utils: path.resolve(__dirname, 'src/_utils'),
-      Svg: path.resolve(__dirname, 'src/assets/svg'),
+      Svg: path.resolve(__dirname, 'src/_assets/svg'),
     },
     extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
     plugins: [new DirectoryNamedWebpackPlugin(true)],
@@ -119,7 +121,9 @@ module.exports = (
   plugins: [
     new webpack.DefinePlugin({
       PROMISE_POLYFILL_PATH: JSON.stringify(
-        `${isTest ? `/absolute${appPath}` : aemPath}/${promisePolyfillPath}.js`
+        `${
+          isTest ? `/absolute${appPath}` : aemPath
+        }/${dynamicClientlibPrefix}${promisePolyfillPath}.js`
       ),
       SPRITE_PATH: JSON.stringify(`${aemPath}/main/resources/sprite.svg`),
     }),
@@ -141,7 +145,9 @@ module.exports = (
           clientLibRoot: __dirname,
           libs: Object.entries(bundles)
             .sort(([a]) =>
-              (a.includes('~') || a.includes('/resources/') ? 1 : -1)
+              (a.includes(automaticNameDelimiter) || a.includes('/resources/')
+                ? 1
+                : -1)
             )
             .reduce((acc, cur) => {
               const name = cur[0];
@@ -175,13 +181,13 @@ module.exports = (
               );
 
               // Determine Dependencies
-              if (!name.includes('~')) {
+              if (!name.includes(automaticNameDelimiter)) {
                 dependencies = Object.entries(bundles)
                   .reverse()
                   .reduce((acc, [libName]) => {
                     if (
-                      libName.includes('~') &&
-                      libName.split('~').includes(name)
+                      libName.includes(automaticNameDelimiter) &&
+                      libName.split(automaticNameDelimiter).includes(name)
                     ) {
                       acc.push(clientlibPrefix + libName);
                     }
@@ -198,7 +204,7 @@ module.exports = (
                 cssProcessor: '[default:none,min:none]',
                 jsProcessor: '[default:none,min:none]',
                 longCacheKey,
-                name: `webpack-clientlib-${name}`,
+                name: dynamicClientlibPrefix + name,
                 serializationFormat: 'xml',
               };
             }),
@@ -230,7 +236,7 @@ module.exports = (
     splitChunks: {
       // Don't split anything that's a resource to a clientlib
       chunks: chunk => !/^.+\/resources\//i.test(chunk.name),
-      automaticNameDelimiter: '~',
+      automaticNameDelimiter,
       name: true,
       minChunks: 1,
       minSize: 0,
