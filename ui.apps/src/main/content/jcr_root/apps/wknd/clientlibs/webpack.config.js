@@ -11,6 +11,7 @@ const appPath = path.resolve(__dirname, 'dist');
 const aemPath = '/etc.clientlibs/wknd/clientlibs';
 const dynamicClientlibPrefix = 'webpack-clientlib-';
 const promisePolyfillPath = 'site/resources/polyfill-promises';
+const spritePath = 'site/resources/sprite.svg';
 const automaticNameDelimiter = '~';
 
 module.exports = (
@@ -79,7 +80,7 @@ module.exports = (
             options: {
               symbolId: '[name]',
               extract: true,
-              spriteFilename: `${appPath}/site/resources/sprite.svg`,
+              spriteFilename: `${appPath}/${dynamicClientlibPrefix}${spritePath}`,
             },
           },
           {
@@ -125,7 +126,9 @@ module.exports = (
           isTest ? `/absolute${appPath}` : aemPath
         }/${dynamicClientlibPrefix}${promisePolyfillPath}.js`
       ),
-      SPRITE_PATH: JSON.stringify(`${aemPath}/main/resources/sprite.svg`),
+      SPRITE_PATH: JSON.stringify(
+        `${aemPath}/${dynamicClientlibPrefix}${spritePath}`
+      ),
     }),
     new MiniCssExtractPlugin({
       filename: ({chunk}) =>
