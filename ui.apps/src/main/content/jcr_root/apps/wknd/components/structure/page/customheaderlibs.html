@@ -2,17 +2,18 @@
     /apps/wknd/components/structure/page/customheaderlibs.html
 
 */-->
+<sly data-sly-use.clientlib="/libs/granite/sightly/templates/clientlib.html"></sly>
 
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
  
-<sly data-sly-use.clientLib="/libs/granite/sightly/templates/clientlib.html" data-sly-call="${clientlib.js @ categories='wknd.dependencies'}"/>
-<sly data-sly-use.clientLib="/libs/granite/sightly/templates/clientlib.html" data-sly-call="${clientlib.css @ categories='wknd.base'}"/>
+<sly data-sly-call="${clientlib.js @ categories='wknd.dependencies'}"/>
+<sly data-sly-call="${clientlib.css @ categories='wknd.base'}"/>
      
 <!--/* Load authoring related client libraries */-->
 <sly data-sly-test="${wcmmode.preview || wcmmode.edit}" data-sly-call="${clientLib.all @ categories='wknd.author'}"/>
 
-<sly data-sly-use.clientLib="/libs/granite/sightly/templates/clientlib.html" data-sly-call="${clientlib.js @ categories='clientlib.siteHead'}"/>
-<sly data-sly-use.clientLib="/libs/granite/sightly/templates/clientlib.html" data-sly-call="${clientlib.css @ categories='clientlib.site'}"/>
-<sly data-sly-test="${wcmmode.preview || wcmmode.edit}" data-sly-use.clientLib="/libs/granite/sightly/templates/clientlib.html" data-sly-call="${clientlib.css @ categories='clientlib.author'}"/>
+<sly data-sly-call="${clientlib.js @ categories='clientlib.siteHead'}"/>
+<sly data-sly-call="${clientlib.css @ categories='clientlib.site'}"/>
+<sly data-sly-test="${wcmmode.preview || wcmmode.edit}" data-sly-call="${clientlib.css @ categories='clientlib.author'}"/>
 <!--/* Include Context Hub */-->
 <sly data-sly-resource="${'contexthub' @ resourceType='granite/contexthub/components/contexthub'}"/>
