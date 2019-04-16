@@ -95,10 +95,10 @@ module.exports = (
   },
   entry: {
     [promisePolyfillPath]: ['es6-promise/auto'],
-    author: ['./src/author'],
-    dialog: ['./src/dialog'],
-    site: ['svgxuse', './src/site'],
-    siteHead: ['./src/siteHead'],
+    author: ['Utils/modernizr', './src/author'],
+    dialog: ['Utils/modernizr', './src/dialog'],
+    site: ['svgxuse', 'Utils/modernizr', './src/site'],
+    siteHead: ['Utils/modernizr', './src/siteHead'],
   },
   output: {
     filename(chunkData) {
