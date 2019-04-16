@@ -263,7 +263,7 @@ module.exports = (
   devServer: {
     hot: true,
     open: true,
-    openPage: 'content/thrivent/mcs/en/index.html',
+    openPage: 'content/wknd/en.html',
     port,
     publicPath: '/static/',
     proxy: [
@@ -272,6 +272,7 @@ module.exports = (
         target: `http://localhost:${aemPort}`,
         bypass(req, res) {
           const baseName = path.basename(req.url);
+          const localAppPath = path.relative(__dirname, appPath);
 
           // hot-update.json file is in the `/static/` root
           if (baseName.includes('hot-update.json')) {
@@ -279,28 +280,24 @@ module.exports = (
             return `/static/${baseName}`;
           }
 
-          // Proxy HMR requests back to Webpack
-          if (baseName.includes('hot-update')) {
-            // The other hot update files (ex. BUNDLE.hot-update.js) are in the `/static/${appPath}` folder
-            const fileName = path
-              .basename(req.url)
-              .split('.')
-              .shift();
+        //   // Proxy HMR requests back to Webpack
+        //   if (baseName.includes('hot-update')) {
+        //     // The other hot update files (ex. BUNDLE.hot-update.js) are in the `/static/${localAppPath}` folder
+        //     const fileName = path
+        //       .basename(req.url)
+        //       .split('.')
+        //       .shift();
 
-            // i.e. /static/apps/APP/clientlibs/site/site.fd3f23c87cc7b89841ee.hot-update.js
-            return `/static/${appPath}/${fileName}/${baseName}`;
-          }
+        //     // i.e. /static/apps/APP/clientlibs/site/site.fd3f23c87cc7b89841ee.hot-update.js
+        //     return `/static/${localAppPath}/${fileName}/${baseName}`;
+        //   }
 
           // Proxy AEM clientlibs back to Webpack
-          if (req.url.includes(aemPath)) {
+          if (req.url.includes(`${aemPath}/${dynamicClientlibPrefix}`)) {
             if (req.url.endsWith('.css')) {
               // Hide CSS, HMR uses in DOM <style> tags
               res.send('');
             } else {
-              if (baseName.startsWith('head')) {
-                return false;
-              }
-
               const filePath = req.url
                 .split(aemPath)
                 .pop()
@@ -314,7 +311,16 @@ module.exports = (
                 finalPath = `${fileName}/${fileName}${path.extname(filePath)}`;
               }
 
-              return `/static/${appPath}/${finalPath}`;
+              console.log(req.url);
+              console.log(baseName);
+              console.log(`/static/${localAppPath}/${finalPath}`);
+              console.log();
+
+
+
+
+
+              return `/static/${localAppPath}/${finalPath}`;
             }
           }
         },
