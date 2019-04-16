@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "clean": "rimraf dist webpack-clientlib-*",
+    "clean": "rimraf dist \"../ui.apps/src/main/content/jcr_root/apps/wknd/clientlibs/webpack-clientlib-*\"",
     "lint-scripts": "eslint --ext .jsx,.js ./src/",
     "lint-styles": "stylelint \"./src/**/*.scss\"",
     "karma": "NODE_ENV=test karma start",

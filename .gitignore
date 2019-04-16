@@ -80,3 +80,6 @@ buildNumber.properties
 
 ### Visual Studio ###
 .vscode
+
+### Dynamic Clientlibs ###
+webpack-clientlib-*

@@ -25,7 +25,7 @@
     <modules>
         <module>core</module>
         <module>ui.apps</module>
-        <module>ui.apps/src/main/content/jcr_root/apps/wknd/clientlibs</module>
+        <module>ui.frontend</module>
         <module>ui.content</module>
         <module>it.tests</module>
         <module>it.launcher</module>

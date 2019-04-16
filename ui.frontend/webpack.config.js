@@ -112,7 +112,10 @@ module.exports = (
   resolve: {
     alias: {
       Src: path.resolve(__dirname, 'src'),
-      Components: path.resolve(__dirname, '../components'),
+      Components: path.resolve(
+        __dirname,
+        '../ui.apps/src/main/content/jcr_root/apps/wknd/components'
+      ),
       Utils: path.resolve(__dirname, 'src/_utils'),
       Svg: path.resolve(__dirname, 'src/_assets/svg'),
     },
@@ -145,7 +148,10 @@ module.exports = (
         const clientlibPrefix = 'clientlib.';
         const config = {
           context: appPath,
-          clientLibRoot: __dirname,
+          clientLibRoot: path.resolve(
+            __dirname,
+            '../ui.apps/src/main/content/jcr_root/apps/wknd/clientlibs'
+          ),
           libs: Object.entries(bundles)
             .sort(([a]) =>
               (a.includes(automaticNameDelimiter) || a.includes('/resources/')
