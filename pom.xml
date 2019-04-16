@@ -40,7 +40,6 @@
         <sling.password>admin</sling.password>
         <vault.user>admin</vault.user>
         <vault.password>admin</vault.password>
-
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
@@ -187,6 +186,14 @@
                     <version>1.0.6</version>
                     <configuration>
                         <failOnWarnings>true</failOnWarnings>
+                        <sourceDirectory>${basedir}/src/main/content/jcr_root</sourceDirectory>
+                        <includes>
+                            <include>/apps/**/*.html</include>
+                            <include>/etc/**/*.html</include>
+                        </includes>
+                        <excludes>
+                            <exclude>/apps/**/clientlibs/**</exclude>
+                        </excludes>
                     </configuration>
                     <executions>
                         <execution>
