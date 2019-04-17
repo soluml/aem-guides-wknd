@@ -279,22 +279,12 @@ module.exports = (
           const baseName = path.basename(req.url);
 
           // hot-update.json file is in the `/static/` root
-          if (baseName.includes('hot-update.json')) {
+          if (baseName.includes('hot-update')) {
             // i.e. /static/38aef42fe50485ef5f9c.hot-update.json
+            // OR
+            //// i.e. /static/apps/APP/clientlibs/site/site.fd3f23c87cc7b89841ee.hot-update.js
             return `/static/${baseName}`;
           }
-
-          //   // Proxy HMR requests back to Webpack
-          //   if (baseName.includes('hot-update')) {
-          //     // The other hot update files (ex. BUNDLE.hot-update.js) are in the `/static/${localAppPath}` folder
-          //     const fileName = path
-          //       .basename(req.url)
-          //       .split('.')
-          //       .shift();
-
-          //     // i.e. /static/apps/APP/clientlibs/site/site.fd3f23c87cc7b89841ee.hot-update.js
-          //     return `/static/${localAppPath}/${fileName}/${baseName}`;
-          //   }
 
           // Proxy AEM clientlibs back to Webpack
           if (req.url.includes(`${aemPath}/${dynamicClientlibPrefix}`)) {
