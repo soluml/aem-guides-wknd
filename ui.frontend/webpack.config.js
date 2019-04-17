@@ -17,13 +17,7 @@ const automaticNameDelimiter = '~';
 
 module.exports = (
   env,
-  {
-    mode = 'development',
-    port = 8080,
-    aemPort = 4502,
-    showReport = false,
-    isTest = false,
-  }
+  {mode = 'development', port = 8080, aemPort = 4502, showReport = false}
 ) => ({
   mode,
   target: 'web',
