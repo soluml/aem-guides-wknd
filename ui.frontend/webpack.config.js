@@ -5,6 +5,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const SpriteLoaderPlugin = require('svg-sprite-loader/plugin');
 const DirectoryNamedWebpackPlugin = require('directory-named-webpack-plugin');
 const SriPlugin = require('webpack-subresource-integrity');
+const md5 = require('md5');
 const AssetsPlugin = require('assets-webpack-plugin');
 const {BundleAnalyzerPlugin} = require('webpack-bundle-analyzer');
 
@@ -176,13 +177,17 @@ module.exports = (
                   }
 
                   if (category.endsWith('Integrity')) {
-                    longCacheKey += file.replace('sha256-', '');
+                    longCacheKey += file;
                   }
 
                   return acc;
                 },
                 {}
               );
+
+              if (longCacheKey) {
+                longCacheKey = md5(longCacheKey);
+              }
 
               // Determine Dependencies
               if (!name.includes(automaticNameDelimiter)) {
