@@ -281,7 +281,7 @@ module.exports = (
           if (baseName.includes('hot-update')) {
             // i.e. /static/38aef42fe50485ef5f9c.hot-update.json
             // OR
-            //// i.e. /static/apps/APP/clientlibs/site/site.fd3f23c87cc7b89841ee.hot-update.js
+            // i.e. /static/apps/APP/clientlibs/site/site.fd3f23c87cc7b89841ee.hot-update.js
             return `/static/${baseName}`;
           }
 
