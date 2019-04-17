@@ -96,7 +96,7 @@ module.exports = (
   },
   entry: {
     author: ['Utils/modernizr', './src/author'],
-    dialog: ['Utils/modernizr', './src/dialog'],
+    dialog: ['svgxuse', 'Utils/modernizr', './src/dialog'],
     site: ['svgxuse', 'Utils/modernizr', './src/site'],
     siteHead: ['Utils/modernizr', './src/siteHead'],
   },
@@ -244,23 +244,26 @@ module.exports = (
         },
       }),
     ],
-    splitChunks: {
-      // Don't split anything that's a resource to a clientlib
-      chunks: chunk => !/^.+\/resources\//i.test(chunk.name),
-      automaticNameDelimiter,
-      name: true,
-      minChunks: 1,
-      minSize: 0,
-      maxSize: 0,
-      maxInitialRequests: 20,
-      cacheGroups: {
-        vendors: {
-          test: /[\\/]node_modules[\\/]/,
-          reuseExistingChunk: true,
-          enforce: true,
-        },
-      },
-    },
+    splitChunks:
+      mode === 'production'
+        ? {
+            // Don't split anything that's a resource to a clientlib
+            chunks: chunk => !/^.+\/resources\//i.test(chunk.name),
+            automaticNameDelimiter,
+            name: true,
+            minChunks: 1,
+            minSize: 0,
+            maxSize: 0,
+            maxInitialRequests: 20,
+            cacheGroups: {
+              vendors: {
+                test: /[\\/]node_modules[\\/]/,
+                reuseExistingChunk: true,
+                enforce: true,
+              },
+            },
+          }
+        : undefined,
   },
   devServer: {
     hot: true,
@@ -298,6 +301,10 @@ module.exports = (
             if (req.url.endsWith('.css')) {
               // Hide CSS, HMR uses in DOM <style> tags
               res.setHeader('Content-Type', 'text/css');
+              res.send('');
+            } else if (baseName.includes(automaticNameDelimiter)) {
+              // Don't serve split libraries as those are production only
+              res.setHeader('Content-Type', 'application/javascript');
               res.send('');
             } else {
               const fileName = baseName.split('.').shift();
