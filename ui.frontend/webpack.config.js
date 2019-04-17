@@ -9,6 +9,8 @@ const md5 = require('md5');
 const AssetsPlugin = require('assets-webpack-plugin');
 const {BundleAnalyzerPlugin} = require('webpack-bundle-analyzer');
 const browserlist = require('browserslist')();
+const Sass = require('sass');
+const SassGlobImporter = require('node-sass-glob-importer')();
 
 /* NOTE: Start Configurable Properties */
 const appPath = path.resolve(__dirname, 'dist');
@@ -55,8 +57,8 @@ module.exports = (
             {
               loader: 'sass-loader',
               options: {
-                implementation: require('sass'), //eslint-disable-line global-require
-                importer: require('node-sass-glob-importer')(), //eslint-disable-line global-require
+                implementation: Sass,
+                importer: SassGlobImporter,
               },
             },
           ],
