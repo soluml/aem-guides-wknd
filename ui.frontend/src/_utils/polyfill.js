@@ -1,6 +1,3 @@
-// Enable if supporting IE11 or provide alternative
-// import 'es6-promise/auto';
-
 const polyfills = [];
 
 // URLSearchParams (https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams)
