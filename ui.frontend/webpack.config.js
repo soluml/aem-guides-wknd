@@ -10,7 +10,7 @@ const AssetsPlugin = require('assets-webpack-plugin');
 const {BundleAnalyzerPlugin} = require('webpack-bundle-analyzer');
 const browserlist = require('browserslist')();
 
-/* NOTE: Configurable Properties */
+/* NOTE: Start Configurable Properties */
 const appPath = path.resolve(__dirname, 'dist');
 const aemPath = '/etc.clientlibs/wknd/clientlibs';
 const spritePath = 'site/resources/sprite.svg';
