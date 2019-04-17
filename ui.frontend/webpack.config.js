@@ -126,7 +126,7 @@ module.exports = (
       ),
     }),
     new MiniCssExtractPlugin({
-      filename: ({chunk}) => `${chunk.name.replace('/js/', '/css/')}.css`,
+      filename: '[name].css',
       chunkFilename: '[id].css',
     }),
     new SpriteLoaderPlugin(),

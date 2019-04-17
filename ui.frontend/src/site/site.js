@@ -3,7 +3,6 @@ import './grid.less';
 import './site.scss';
 
 polyfills.then(() => {
-  // Load: this does NOT include .jsx files as components should be included via other files
   let req = require.context('Components', true, /\.site\.js$/);
   req.keys().forEach(req);
 

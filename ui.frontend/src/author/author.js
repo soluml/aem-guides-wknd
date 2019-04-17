@@ -2,7 +2,6 @@ import polyfills from 'Utils/polyfill';
 import './author.scss';
 
 polyfills.then(() => {
-  // Load: this does NOT include .jsx files as components should be included via other files
   let req = require.context('Components', true, /\.author\.js$/);
   req.keys().forEach(req);
 

@@ -15,8 +15,6 @@
     "expect": true,
     "Modernizr": true,
     "$": true,
-    "_satellite": true,
-    "PROMISE_POLYFILL_PATH": true,
     "SPRITE_PATH": true
   },
   "rules": {
