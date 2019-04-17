@@ -12,22 +12,43 @@ const browserlist = require('browserslist')();
 const Sass = require('sass');
 const SassGlobImporter = require('node-sass-glob-importer')();
 
+/* *********************************** */
 /* NOTE: Start Configurable Properties */
+/* *********************************** */
+
+// This tells Webpack where to drop the outputted files
 const appPath = path.resolve(__dirname, 'dist');
+
+// This tells Webpack where the clientlibs will be served from within Webpack. This is essential for things like HMR and knowing the Sprite location
 const aemPath = '/etc.clientlibs/wknd/clientlibs';
-const spritePath = 'site/resources/sprite.svg';
+
+// Name of sprite file (include .svg at the end)
+const spritePath = 'sprite.svg';
+
+// Location of your base components directory
 const componentPath = path.resolve(
   __dirname,
   '../ui.apps/src/main/content/jcr_root/apps/wknd/components'
 );
+
+// Location of your base clientlib directory
 const clientlibPath = path.resolve(
   __dirname,
   '../ui.apps/src/main/content/jcr_root/apps/wknd/clientlibs'
 );
+
+// What page in AEM do you want to open when you start HMR
 const hmrOpenPage = 'content/wknd/en.html';
+
+// Prefix for your clientlibs
 const dynamicClientlibPrefix = 'webpack-clientlib-';
+
+// Webpack split chunks delimiter
 const automaticNameDelimiter = '~';
+
+/* ********************************* */
 /* NOTE: End Configurable Properties */
+/* ********************************* */
 
 module.exports = (
   env,
@@ -37,6 +58,8 @@ module.exports = (
   const allEntryDependencies = ['Utils/modernizr'].concat(
     browserlist.includes('ie 11') ? ['es6-promise/auto'] : []
   );
+
+  const trueSpritePath = `site/resources/${spritePath}`;
 
   return {
     mode,
@@ -95,7 +118,7 @@ module.exports = (
               options: {
                 symbolId: '[name]',
                 extract: true,
-                spriteFilename: `${appPath}/${dynamicClientlibPrefix}${spritePath}`,
+                spriteFilename: `${appPath}/${dynamicClientlibPrefix}${trueSpritePath}`,
               },
             },
             {
@@ -133,7 +156,7 @@ module.exports = (
     plugins: [
       new webpack.DefinePlugin({
         SPRITE_PATH: JSON.stringify(
-          `${aemPath}/${dynamicClientlibPrefix}${spritePath}`
+          `${aemPath}/${dynamicClientlibPrefix}${trueSpritePath}`
         ),
       }),
       new MiniCssExtractPlugin({
