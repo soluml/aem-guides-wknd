@@ -10,11 +10,22 @@ const AssetsPlugin = require('assets-webpack-plugin');
 const {BundleAnalyzerPlugin} = require('webpack-bundle-analyzer');
 const browserlist = require('browserslist')();
 
+/* Configurable Properties */
 const appPath = path.resolve(__dirname, 'dist');
 const aemPath = '/etc.clientlibs/wknd/clientlibs';
-const dynamicClientlibPrefix = 'webpack-clientlib-';
 const spritePath = 'site/resources/sprite.svg';
+const componentPath = path.resolve(
+  __dirname,
+  '../ui.apps/src/main/content/jcr_root/apps/wknd/components'
+);
+const clientlibPath = path.resolve(
+  __dirname,
+  '../ui.apps/src/main/content/jcr_root/apps/wknd/clientlibs'
+);
+const hmrOpenPage = 'content/wknd/en.html';
+const dynamicClientlibPrefix = 'webpack-clientlib-';
 const automaticNameDelimiter = '~';
+/* / Configurable Properties */
 
 const allEntryDependencies = ['Utils/modernizr'].concat(
   browserlist.includes('ie 11') ? ['es6-promise/auto'] : []
@@ -108,10 +119,7 @@ module.exports = (
   resolve: {
     alias: {
       Src: path.resolve(__dirname, 'src'),
-      Components: path.resolve(
-        __dirname,
-        '../ui.apps/src/main/content/jcr_root/apps/wknd/components'
-      ),
+      Components: componentPath,
       Utils: path.resolve(__dirname, 'src/_utils'),
       Svg: path.resolve(__dirname, 'src/_assets/svg'),
     },
@@ -141,10 +149,7 @@ module.exports = (
         const clientlibPrefix = 'clientlib.';
         const config = {
           context: appPath,
-          clientLibRoot: path.resolve(
-            __dirname,
-            '../ui.apps/src/main/content/jcr_root/apps/wknd/clientlibs'
-          ),
+          clientLibRoot: clientlibPath,
           libs: Object.entries(bundles)
             .sort(([a]) =>
               (a.includes(automaticNameDelimiter) || a.includes('/resources/')
@@ -267,7 +272,7 @@ module.exports = (
   devServer: {
     hot: true,
     open: true,
-    openPage: 'content/wknd/en.html',
+    openPage: hmrOpenPage,
     port,
     publicPath: '/static/',
     proxy: [
