@@ -10,7 +10,7 @@ const AssetsPlugin = require('assets-webpack-plugin');
 const {BundleAnalyzerPlugin} = require('webpack-bundle-analyzer');
 const browserlist = require('browserslist')();
 
-/* Configurable Properties */
+/* NOTE: Configurable Properties */
 const appPath = path.resolve(__dirname, 'dist');
 const aemPath = '/etc.clientlibs/wknd/clientlibs';
 const spritePath = 'site/resources/sprite.svg';
@@ -25,7 +25,7 @@ const clientlibPath = path.resolve(
 const hmrOpenPage = 'content/wknd/en.html';
 const dynamicClientlibPrefix = 'webpack-clientlib-';
 const automaticNameDelimiter = '~';
-/* / Configurable Properties */
+/* NOTE: End Configurable Properties */
 
 const allEntryDependencies = ['Utils/modernizr'].concat(
   browserlist.includes('ie 11') ? ['es6-promise/auto'] : []
