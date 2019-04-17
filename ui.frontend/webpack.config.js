@@ -130,7 +130,7 @@ module.exports = (
       chunkFilename: '[id].css',
     }),
     new SpriteLoaderPlugin(),
-    new SriPlugin({hashFuncNames: ['sha256']}),
+    mode === 'production' && new SriPlugin({hashFuncNames: ['sha256']}),
     new AssetsPlugin({
       filename: 'clientlib.config.js',
       fileTypes: ['js', 'css'],
@@ -187,6 +187,8 @@ module.exports = (
 
               if (longCacheKey) {
                 longCacheKey = md5(longCacheKey);
+              } else {
+                longCacheKey = Date.now();
               }
 
               // Determine Dependencies
@@ -272,7 +274,6 @@ module.exports = (
         target: `http://localhost:${aemPort}`,
         bypass(req, res) {
           const baseName = path.basename(req.url);
-          const localAppPath = path.relative(__dirname, appPath);
 
           // hot-update.json file is in the `/static/` root
           if (baseName.includes('hot-update.json')) {
@@ -296,27 +297,16 @@ module.exports = (
           if (req.url.includes(`${aemPath}/${dynamicClientlibPrefix}`)) {
             if (req.url.endsWith('.css')) {
               // Hide CSS, HMR uses in DOM <style> tags
+              res.setHeader('Content-Type', 'text/css');
               res.send('');
             } else {
-              const filePath = req.url
-                .split(aemPath)
-                .pop()
-                .substr(1);
-              let finalPath = filePath;
+              const fileName = baseName.split('.').shift();
+              const finalPath = `${fileName.replace(
+                dynamicClientlibPrefix,
+                ''
+              )}${path.extname(baseName)}`;
 
-              // AEM clientlibs may be versioned, strip that out for Webpack
-              if (filePath.split('.').length > 2) {
-                const fileName = filePath.split('.').shift();
-
-                finalPath = `${fileName}/${fileName}${path.extname(filePath)}`;
-              }
-
-              console.log(req.url);
-              console.log(baseName);
-              console.log(`/static/${localAppPath}/${finalPath}`);
-              console.log();
-
-              return `/static/${localAppPath}/${finalPath}`;
+              return `/static/${finalPath}`;
             }
           }
         },
