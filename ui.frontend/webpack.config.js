@@ -8,12 +8,17 @@ const SriPlugin = require('webpack-subresource-integrity');
 const md5 = require('md5');
 const AssetsPlugin = require('assets-webpack-plugin');
 const {BundleAnalyzerPlugin} = require('webpack-bundle-analyzer');
+const browserlist = require('browserslist')();
 
 const appPath = path.resolve(__dirname, 'dist');
 const aemPath = '/etc.clientlibs/wknd/clientlibs';
 const dynamicClientlibPrefix = 'webpack-clientlib-';
 const spritePath = 'site/resources/sprite.svg';
 const automaticNameDelimiter = '~';
+
+const allEntryDependencies = ['Utils/modernizr'].concat(
+  browserlist.includes('ie 11') ? ['es6-promise/auto'] : []
+);
 
 module.exports = (
   env,
@@ -89,10 +94,10 @@ module.exports = (
     ],
   },
   entry: {
-    author: ['Utils/modernizr', './src/author'],
-    dialog: ['svgxuse', 'Utils/modernizr', './src/dialog'],
-    site: ['svgxuse', 'Utils/modernizr', './src/site'],
-    siteHead: ['Utils/modernizr', './src/siteHead'],
+    author: allEntryDependencies.concat(['./src/author']),
+    dialog: allEntryDependencies.concat(['svgxuse', './src/dialog']),
+    site: allEntryDependencies.concat(['svgxuse', './src/site']),
+    siteHead: allEntryDependencies.concat(['./src/siteHead']),
   },
   output: {
     filename: '[name].js',
