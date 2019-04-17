@@ -4,13 +4,13 @@ const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const SpriteLoaderPlugin = require('svg-sprite-loader/plugin');
 const DirectoryNamedWebpackPlugin = require('directory-named-webpack-plugin');
+const SriPlugin = require('webpack-subresource-integrity');
 const AssetsPlugin = require('assets-webpack-plugin');
 const {BundleAnalyzerPlugin} = require('webpack-bundle-analyzer');
 
 const appPath = path.resolve(__dirname, 'dist');
 const aemPath = '/etc.clientlibs/wknd/clientlibs';
 const dynamicClientlibPrefix = 'webpack-clientlib-';
-const promisePolyfillPath = 'site/resources/polyfill-promises';
 const spritePath = 'site/resources/sprite.svg';
 const automaticNameDelimiter = '~';
 
@@ -94,20 +94,16 @@ module.exports = (
     ],
   },
   entry: {
-    [promisePolyfillPath]: ['es6-promise/auto'],
     author: ['Utils/modernizr', './src/author'],
     dialog: ['Utils/modernizr', './src/dialog'],
     site: ['svgxuse', 'Utils/modernizr', './src/site'],
     siteHead: ['Utils/modernizr', './src/siteHead'],
   },
   output: {
-    filename(chunkData) {
-      return `[name]${
-        chunkData.chunk.name.includes('/resources/') ? '' : '.[hash]'
-      }.js`;
-    },
-    chunkFilename: '[name].[chunkhash].js',
+    filename: '[name].js',
+    chunkFilename: '[name].js',
     path: appPath,
+    crossOriginLoading: 'anonymous',
   },
   resolve: {
     alias: {
@@ -124,25 +120,22 @@ module.exports = (
   },
   plugins: [
     new webpack.DefinePlugin({
-      PROMISE_POLYFILL_PATH: JSON.stringify(
-        `${
-          isTest ? `/absolute${appPath}` : aemPath
-        }/${dynamicClientlibPrefix}${promisePolyfillPath}.js`
-      ),
       SPRITE_PATH: JSON.stringify(
         `${aemPath}/${dynamicClientlibPrefix}${spritePath}`
       ),
     }),
     new MiniCssExtractPlugin({
-      filename: ({chunk}) =>
-        `${chunk.name.replace('/js/', '/css/')}.${chunk.hash}.css`,
+      filename: ({chunk}) => `${chunk.name.replace('/js/', '/css/')}.css`,
       chunkFilename: '[id].css',
     }),
     new SpriteLoaderPlugin(),
+    new SriPlugin({hashFuncNames: ['sha256']}),
     new AssetsPlugin({
       filename: 'clientlib.config.js',
       fileTypes: ['js', 'css'],
+      includeManifest: true,
       integrity: true,
+      manifestFirst: true,
       update: true,
       processOutput(bundles) {
         const clientlibPrefix = 'clientlib.';
@@ -178,10 +171,12 @@ module.exports = (
               let dependencies;
               const assets = Object.entries(files).reduce(
                 (acc, [category, file]) => {
-                  if (typeof file === 'string') {
-                    longCacheKey += file.split('.')[1] || '';
-
+                  if (category === 'js' || category === 'css') {
                     return {...acc, [category]: [file]};
+                  }
+
+                  if (category.endsWith('Integrity')) {
+                    longCacheKey += file.replace('sha256-', '');
                   }
 
                   return acc;
@@ -280,17 +275,17 @@ module.exports = (
             return `/static/${baseName}`;
           }
 
-        //   // Proxy HMR requests back to Webpack
-        //   if (baseName.includes('hot-update')) {
-        //     // The other hot update files (ex. BUNDLE.hot-update.js) are in the `/static/${localAppPath}` folder
-        //     const fileName = path
-        //       .basename(req.url)
-        //       .split('.')
-        //       .shift();
+          //   // Proxy HMR requests back to Webpack
+          //   if (baseName.includes('hot-update')) {
+          //     // The other hot update files (ex. BUNDLE.hot-update.js) are in the `/static/${localAppPath}` folder
+          //     const fileName = path
+          //       .basename(req.url)
+          //       .split('.')
+          //       .shift();
 
-        //     // i.e. /static/apps/APP/clientlibs/site/site.fd3f23c87cc7b89841ee.hot-update.js
-        //     return `/static/${localAppPath}/${fileName}/${baseName}`;
-        //   }
+          //     // i.e. /static/apps/APP/clientlibs/site/site.fd3f23c87cc7b89841ee.hot-update.js
+          //     return `/static/${localAppPath}/${fileName}/${baseName}`;
+          //   }
 
           // Proxy AEM clientlibs back to Webpack
           if (req.url.includes(`${aemPath}/${dynamicClientlibPrefix}`)) {
@@ -315,10 +310,6 @@ module.exports = (
               console.log(baseName);
               console.log(`/static/${localAppPath}/${finalPath}`);
               console.log();
-
-
-
-
 
               return `/static/${localAppPath}/${finalPath}`;
             }
